@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <!--
+    ES6-Kompatibilität für ältere Geräte sicherstellen. Android 4.4 unterstützt
+    noch kein ES-6-Skript, sondern dort läuft nur ES-5.
+    Damit die App auch auf diesen Geräten läuft, muss sichergetellt werden,
+    dass ES-6-Methoden auch hier korrekt ausgeführt werden. -->
+  <script type="text/javascript" src="libs/es6-shim.js"></script>
+  
+  <script>
+    // Zu Testzwecken die Anwendung zurücksetzen
+    // localStorage.clear();
+    
+    window.onerror = function(messageOrEvent, url, lineNo, columnNo, error) {
+      var string = messageOrEvent.toLowerCase();
+      var showMessage = "";
+      
+      if (string.indexOf("script error") > -1){
+          showMessage = "Script Error";
+      } else {
+          var filename = url;
+          
+          if(url.indexOf("/") != -1) {
+            filename = url.substring(url.lastIndexOf("/") + 1);
+          }
+          
+          showMessage = [
+              'JavaScript-Fehler: ' + messageOrEvent,
+              'file: ' + filename,
+              'Line: ' + lineNo,
+              'Column: ' + columnNo
+              // 'Error object: ' + JSON.stringify(error)
+          ].join('\n');
+      }
+      
+      alert(showMessage);
+      console.error(showMessage);
+      
+      // Script-Tag wird gerade abgearbeitet
+      if (document.currentScript) {
+        // Betroffene Zeilen ausgeben
+        var lines = document.currentScript.text.split("\n");
+        
+        for (var index = 0; index < lines.length; index++) {
+          if (index >= (lineNo - 4) && index <= (lineNo + 4)) {
+          
+            var text = (index+1) + ": " + lines[index];
+            console.warn(text);
+          }
+        }
+      }
+      
+      return false;
+    };
+  </script>
+  
+  <meta charset="utf-8" />
+  
+  <meta name="format-detection" content="telephone=no" />
+  
+  <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+  
+  <!-- Content-Security-Policy
+  Good default declaration:
+  * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
+  * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
+  * Disables use of eval() and inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
+      * Enable inline JS: add 'unsafe-inline' to default-src
+      * Enable eval(): add 'unsafe-eval' to default-src
+  * Create your own at http://cspisawesome.com
+  --> 
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src * data: gap: https://ssl.gstatic.com 'unsafe-eval';
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' *;
+    connect-src 'self' 'unsafe-inline' 'unsafe-eval' blob: ws: *;">
+
+  <link rel="stylesheet" href="libs/slidebars/slidebars.css">
+  
+  <link rel="stylesheet" type="text/css" href="css/main.css" />
+  <link rel="stylesheet" type="text/css" href="css/spinner.css" />
+  
+  <title>Sample App</title>
+</head>
+
+<body onload="onLoad()">
+  
+  <!-- div für 'slidebars' -->
+  <div id="slidebars-canvas-container" canvas="container">
+  
+    <!-- Navigation-Bar -->
+    <div class="navigationbar">
+      
+      <!-- Menü-Icon -->
+      <img id="menu-button" src="img/menu_weiss.png" class="navigationbar-icon">
+      
+      <!-- Titel -->
+      <span id="navigationbar-title" class="navigationbar-text"></span>
+      
+      <!-- Button rechts -->
+      <div id="navigationbar-buttons-right">
+        <span id="navigationbar-backbutton" class="navigationbar-text"><img src="img/back.png" width="30"></span>
+      </div>
+      
+    </div>
+
+    <!-- Content -->
+    <div id="content">
+    
+    </div>
+  
+  </div> <!-- div für slidebars -->
+    
+  <div id="please-wait-container">
+    <div id="please-wait-content">
+      <div class="loader"></div>
+      <span style="font-weight: 900; font-size: large;">Please wait, loading data ...</span>
+    </div>
+  </div>
+  
+  <div off-canvas="slidebar-id left overlay">
+    <ul class="slidebar-list">
+      <li>
+        <img src="img/home.png">
+        <span>Menu Entry 1</span> 
+      </li>
+      <li>
+        <img src="img/home.png">
+        <span>Menu Entry 2</span> 
+      </li>
+    </ul>
+  </div>
+  
+  <script type="text/javascript" src="cordova.js"></script>
+  
+  <script type="text/javascript" src="libs/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="libs/slidebars/slidebars.min.js"></script>
+  <script type="text/javascript" src="libs/fastclick.js"></script>
+  
+  <script type="text/javascript" src="js/file_util.js"></script>
+  <script type="text/javascript" src="js/page_util.js"></script>
+  <script type="text/javascript" src="js/util.js"></script>
+  <script type="text/javascript" src="js/main.js"></script>
+  
+  <script>
+    function onLoad() {
+      // Bind any events that are required on startup. Common events are:
+      // 'load', 'deviceready', 'offline', and 'online'.
+      document.addEventListener("deviceready", onDeviceReady, false);
+    }
+    
+    function onDeviceReady() {
+      console.log("deviceReady");
+      
+      // App initialisieren
+      app.initialize(appInitializedCallback,
+        // Error-Callback
+        function(errorMessage) {
+          alert("Konnte Anwendung nicht initialisieren: " + errorMessage);
+        }
+      );
+    }
+    
+    function appInitializedCallback() {
+      console.log("appInitializedCallback");
+      loadStartpage();
+    }
+    
+    function setupContainers() {
+      return [{
+      "location":{
+        "id":213,
+        "name":"Weddewarden / Eingang Schulpfad",
+        "street_id":776,
+        "street_number":"1",
+        "created_at":"2009/12/02 12:56:30 +0100",
+        "updated_at":"2009/12/02 12:56:30 +0100",
+        "lat":"53.6034047",
+        "lng":"8.5342627",
+        "distance":0.4737072218608595,
+        "bearing":68,
+        "street":{
+          "id":776,
+          "name":"Schulpfad",
+          "created_at":"2009/12/02 00:52:09 +0100",
+          "updated_at":"2016/11/28 06:41:44 +0100" 
+        },
+        "containers":[
+          {
+            "id":3,
+            "location_id":213,
+            "container_type":2,
+            "container_count":1,
+            "created_at":"2009/12/08 21:28:40 +0100",
+            "updated_at":"2009/12/08 21:28:40 +0100" 
+          },
+          {
+            "id":4,
+            "location_id":213,
+            "container_type":3,
+            "container_count":1,
+            "created_at":"2009/12/08 21:28:40 +0100",
+            "updated_at":"2009/12/08 21:28:40 +0100" 
+          }
+        ]
+      }
+    },
+    {
+      "location":{
+        "id":211,
+        "name":"Burgstraße/Parkplatz",
+        "street_id":214,
+        "street_number":"1",
+        "created_at":"2009/12/02 12:56:25 +0100",
+        "updated_at":"2010/12/02 15:44:27 +0100",
+        "lat":"53.5973824",
+        "lng":"8.5340479",
+        "distance":0.649133196936381,
+        "bearing":139,
+        "street":{
+          "id":214,
+          "name":"Burgstraße",
+          "created_at":"2009/12/02 00:50:44 +0100",
+          "updated_at":"2016/11/28 06:41:32 +0100" 
+        },
+        "containers":[
+          {
+            "id":1,
+            "location_id":211,
+            "container_type":2,
+            "container_count":2,
+            "created_at":"2009/12/08 21:28:40 +0100",
+            "updated_at":"2015/10/29 13:15:21 +0100" 
+          },
+          {
+            "id":2,
+            "location_id":211,
+            "container_type":3,
+            "container_count":1,
+            "created_at":"2009/12/08 21:28:40 +0100",
+            "updated_at":"2010/11/11 14:00:27 +0100" 
+          }
+        ]
+      }
+    },
+    {
+      "location":{
+        "id":216,
+        "name":"Deponie Grauer Wall",
+        "street_id":988,
+        "street_number":"222",
+        "created_at":"2009/12/02 12:56:38 +0100",
+        "updated_at":"2009/12/02 12:56:38 +0100",
+        "lat":"53.587011",
+        "lng":"8.5724177",
+        "distance":3.3832477815293323,
+        "bearing":119,
+        "street":{
+          "id":988,
+          "name":"Wurster Straße",
+          "created_at":"2009/12/02 00:52:39 +0100",
+          "updated_at":"2016/11/28 06:41:48 +0100" 
+        },
+        "containers":[
+          {
+            "id":6,
+            "location_id":216,
+            "container_type":2,
+            "container_count":1,
+            "created_at":"2009/12/08 21:28:40 +0100",
+            "updated_at":"2009/12/08 21:28:40 +0100" 
+          },
+          {
+            "id":240,
+            "location_id":216,
+            "container_type":3,
+            "container_count":1,
+            "created_at":"2012/11/07 10:23:08 +0100",
+            "updated_at":"2012/11/07 10:23:08 +0100" 
+          }
+        ]
+      }
+    }];
+    }
+  </script>
+</body>
+
+</html>

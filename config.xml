@@ -1,0 +1,124 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Doku für die config.xml: https://cordova.apache.org/docs/en/latest/config_ref/index.html --> 
+<widget
+  id="de.beck.maps.anr.sample"
+  version="1.0.0"
+  android-versionCode="1"
+  xmlns="http://www.w3.org/ns/widgets"
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:gap="http://phonegap.com/ns/1.0">
+  
+    <!-- Das short-Attribut legt den App-Display-Namen auf dem Home-Screen fest -->
+    <name short="Maps ANR Sample">Maps ANR Sample</name>
+    
+    <description>
+      Sample Project for debugging an ANR in Android 7, which caused by the cordova maps plugin.
+    </description>
+    
+    <author email="manuelbeck@fastmail.net" href="">
+        Manuel Beck
+    </author>
+    
+    <access origin="*" />
+    <content src="index.html" />
+    
+    <preference name="phonegap-version" value="cli-7.1.0" />
+    <preference name="ShowSplashScreenSpinner" value="false" />
+    
+    <!-- DisallowOverscroll
+         Set to true if you don't want the interface to display any feedback when users scroll past
+         the beginning or end of content. On iOS, overscroll gestures cause content to bounce back
+         to its original position. on Android, they produce a more subtle glowing effect along the
+         top or bottom edge of the content. -->
+    <preference name="DisallowOverscroll" value="false" />
+    
+    <platform name="android">
+        <preference name="android-minSdkVersion" value="19" />
+        <preference name="Orientation" value="default" />
+        
+        <!-- Splash Screen deaktivieren -->
+        <preference name="SplashScreenDelay" value="0" />
+        
+        <!-- App-Icons Android -->
+        <icon density="mdpi" src="www/res/icon/android/drawable-mdpi-icon.png" />
+        <icon density="hdpi" src="www/res/icon/android/drawable-hdpi-icon.png" />
+        <icon density="xhdpi" src="www/res/icon/android/drawable-xhdpi-icon.png" />
+        <icon density="xxhdpi" src="www/res/icon/android/drawable-xxhdpi-icon.png" />
+        <icon density="xxxhdpi" src="www/res/icon/android/drawable-xxxhdpi-icon.png" />
+    </platform>
+    
+    <!-- Android-Manifest anpassen -->
+    <edit-config file="AndroidManifest.xml"
+                 target="/manifest/application"
+                 mode="merge"
+                 platform="android">
+         <!-- Ab Android 6 wurde Auto Backup eingeführt, was auch die App-Daten sichert. Wird
+              eine App deinstalliert, dann bleiben die App-Daten erhalten und werden nicht gelöscht.
+              Dieses Feature kann vom Benutzer aktiviert oder deaktiviert werden. 
+              Die Daten von unserer App sollen generell nicht gesichert werden. -->
+        <application android:allowBackup="false"/>
+    </edit-config>
+    
+    <platform name="browser">
+        <preference name="ShowSplashScreen" value="false" />
+    </platform>
+    
+    <!-- Standard Cordova Plugins -->
+    <plugin name="cordova-plugin-device" spec="^1.1.7" />
+    <plugin name="cordova-plugin-dialogs" spec="^1.3.4" />
+    <plugin name="cordova-plugin-file" spec="^5.0.0" />
+    <plugin name="cordova-plugin-file-transfer" spec="^1.7.0" />
+    <plugin name="cordova-plugin-geolocation" spec="^3.0.0">
+      <variable name="GEOLOCATION_USAGE_DESCRIPTION" value="Die Standortbestimmung wird genutzt, um Ihren Standort auf der Karte anzuzeigen." />
+    </plugin>
+    <plugin name="cordova-plugin-globalization" spec="^1.0.8" />
+    <plugin name="cordova-plugin-inappbrowser" spec="^1.7.2" />
+    <plugin name="cordova-plugin-network-information" spec="^1.3.4" />
+    
+    <!-- Doku SplashScreen: https://cordova.apache.org/docs/en/latest/reference/cordova-plugin-splashscreen/ -->
+    <plugin name="cordova-plugin-splashscreen" spec="^4.1.0" />
+    
+    <!-- Benötigt, um die Farbe der Statusbar zu setzen und weiteres. Doku:
+         https://cordova.apache.org/docs/en/latest/reference/cordova-plugin-statusbar/
+         
+         Die Einstellungen für die Statusbar dürfen nicht in der config.xml vorgenommen werden, da durch
+         einen Bug im PhonegapBuild die Einstellungen durch Standardwerte überschrieben werden können.
+         Siehe: https://getsatisfaction.com/nitobi/topics/cordova-plugin-statusbar-on-phonegap-version-cli-5-2-0-ignoring-statusbaroverlayswebview
+         Die Einstellungen für die Statusbar werden derzeit per Javascript in der main.js vorgenommen.
+      -->
+    <plugin name="cordova-plugin-statusbar" spec="^2.3.0" />
+    
+    <plugin name="cordova-plugin-vibration" spec="^2.1.6" />
+    <plugin name="cordova-plugin-whitelist" spec="^1.3.3" />
+    
+    <!-- Eigene Plugins -->
+    
+    <!-- Notifications -->
+    <!-- Aktuell gibt es unter Android 8 Probleme beim Geräteneustart, siehe:
+         https://github.com/katzer/cordova-plugin-local-notifications/issues/1541
+         Der Entwickler hat noch keinen Fix dafür rausgebracht, aber die Community, wie man im Issue sehen kann. So lange der Entwickler noch nichts neues rausgebracht hat, verwenden wir den Fix der Community. -->
+    <!-- <plugin name="cordova-plugin-local-notification" spec="0.9.0-beta.3" /> -->
+    <plugin name="cordova-plugin-local-notification" spec="https://github.com/GitToTheHub/cordova-plugin-local-notifications.git#Android_8_Fix_Device_Reboot" />
+    
+    <plugin name="cordova-plugin-googlemaps" spec="2.2.8">
+      <variable name="API_KEY_FOR_ANDROID" value="AIzaSyABhCtQrQL1ADq8_x8FBW_fRC6aEaEwyA0" />
+      <variable name="API_KEY_FOR_IOS" value="AIzaSyABhCtQrQL1ADq8_x8FBW_fRC6aEaEwyA0" />
+    </plugin>
+    
+    <plugin name="cordova-plugin-calendar" spec="5.0.0">
+      <variable name="CALENDAR_USAGE_DESCRIPTION" value="Bei Bedarf können Sie die Abfuhrtermine mit dem Kalender synchronisieren." />
+    </plugin>
+    
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="tel:*" />
+    <allow-intent href="sms:*" />
+    <allow-intent href="mailto:*" />
+    <allow-intent href="geo:*" />
+    <allow-intent href="maps:*" />
+    
+    <platform name="android">
+        <allow-intent href="market:*" />
+    </platform>
+    
+</widget>

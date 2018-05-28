@@ -1,0 +1,278 @@
+<script>
+  const LOCATION_TYPE_CONTAINER = 1;
+  const CONTAINER_TYPE_GLAS = 2;
+  const CONTAINER_TYPE_KLEIDER = 3;
+  var containerTypes = {};
+  
+  containerTypes[CONTAINER_TYPE_GLAS] = {
+    imageName: "flaschen.png",
+    name: "Glascontainer"
+  };
+
+  containerTypes[CONTAINER_TYPE_KLEIDER] = {
+    imageName: "altkleider.png",
+    name: "Altkleider"
+  };
+  
+  var vars = currentPage.variables;
+  vars.map = null;
+  vars.markerObjects = [];
+  vars.locations = [];
+  
+  var containerLocations = setupContainers();
+  var locationType = LOCATION_TYPE_CONTAINER;
+  
+  if (locationType == LOCATION_TYPE_CONTAINER) {
+    setPageTitle("Container");
+    vars.locations = containerLocations;
+  }
+  
+  // Wenn auf eine andere Seite navigiert wird, Karte schließen
+  setNavigateCallback(function(page, navigatingBack) {
+    destroyMap();
+  });
+  
+  initMap();
+  
+  function destroyMap() {
+    if (vars.map) {
+      console.log("destroyMap");
+      vars.map.setVisible(false);
+      vars.map.remove();
+      vars.map = null;
+    }
+  }
+  
+  function initMap() {
+    console.log("initMap");
+    
+    showPleaseWaitContainer();
+    
+    var options = {
+      controls: {
+        compass: true,
+        myLocationButton: true,
+        indoorPicker: true,
+        zoom: true
+      },
+      camera : {
+        target: {
+          lat: 53.6017982,
+          lng: 8.5254246
+        },
+        zoom: 15
+      }
+    };
+
+    // Initialize the map view
+    vars.map = plugin.google.maps.Map.getMap($("#locations-map").get(0), options);
+
+    // Wait until the map is ready status.
+    vars.map.addEventListener(plugin.google.maps.event.MAP_READY, onMapReady);
+    
+    function onMapReady() {
+      console.log("MAP_READY");
+      
+      console.log("Init Marker Data");
+      
+      var markersData = [];
+      
+      // Standort für eingegebene Adresse
+      markersData.push({
+        position: {lat: 53.6017982, lng: 8.5254246},
+        title: "Strompfad 20",
+        snippet: "Ihr aktueller Standort",
+        icon: {
+          url: "img/haus.png",
+          size: {
+            width: 48,
+            height: 48
+          }
+        }
+      });
+      
+      // Marker-Daten für Standorte aufbauen
+      for(var index=0; index < vars.locations.length; index++) {
+        var location = locationData(vars.locations[index]);
+        var image = "";
+        var title = "";
+        var snippet = "";
+        
+        // Container verarbeiten
+        if (locationType == LOCATION_TYPE_CONTAINER) {
+          var containers = location.containers;
+          
+          // Bild für Standort setzen
+          var image = "altkleider_flaschen.png";
+          
+          if (containers.length == 1) {
+            image = containerImage(containers[0])
+          }
+          
+          // Titel für Container
+          var title = "";
+          
+          for (var containerIndex = 0; containerIndex < containers.length; containerIndex++) {
+            var container = containers[containerIndex];
+            
+            if (title) {
+              title += ", ";
+            }
+            
+            title += container.container_count + " " + containerName(container);
+          }
+          
+          snippet = containerLocationSubText(location);
+        }
+        
+        // Marker-Daten für Standort
+        markersData.push({
+          position: {lat: location.lat, lng: location.lng},
+          title: title,
+          snippet: snippet,
+          icon: {
+            url: "img/" + image,
+            size: {
+              width: 48,
+              height: 48
+            }
+          },
+          locationId: location.id
+        });
+      }
+      
+      console.log("Show Marker on Map");
+      
+      // Marker auf Karte hinzufügen
+      var baseArrayClass = new plugin.google.maps.BaseArrayClass(markersData);
+  
+      baseArrayClass.map(function(markerData, iterateMarkerCallback) {
+      
+        // The variable "markerData" contains each element of the markersData.
+        vars.map.addMarker(markerData, function(marker) {
+          
+          // Marker wird angeklickt, Routen-Button anzeigen
+          marker.on(plugin.google.maps.event.MARKER_CLICK, function() {
+            var thisMarker = this;
+            
+            $("#maps-route-link").attr(
+              "href",
+              googleMapsDirectionLink(
+                thisMarker.getPosition().lat,
+                thisMarker.getPosition().lng
+              )
+            );
+            
+            $("#maps-route-container").show();
+          });
+          
+          // Info-Fenster wird geschlossen
+          marker.on(plugin.google.maps.event.INFO_CLOSE, function() {
+            $("#maps-route-container").hide();
+          });
+		  
+          iterateMarkerCallback(marker);
+        });
+
+      }, function(markerObjects) {
+        vars.markerObjects = markerObjects;
+        
+        // Info-Fenster für ein Standort öffnen
+        if (vars.showLocationInfoId) {
+          console.log("showLocationInfoId: " + vars.showLocationInfoId);
+          
+          showLocationInfo(vars.showLocationInfoId);
+          vars.showLocationInfoId = null;
+          
+          // Kamera soll alle Standorte auf einem Bildausschnitt anzeigen
+        } else {
+          console.log("Zoom Camera, to show all markers on map");
+          
+          var bounds = [];
+          markerObjects.forEach(function(marker) {
+            bounds.push(marker.getPosition());
+          });
+
+          vars.map.animateCamera({
+            target: bounds,
+            duration: 500
+          }, function() {
+          });
+        }
+        
+        console.log("map init finished");
+        hidePleaseWaitContainer();
+      });
+    }
+  }
+  
+  function showLocationInfo(locationId) {
+    for(var index=0; index < vars.markerObjects.length; index++) {
+      var markerObject = vars.markerObjects[index];
+      
+      if (markerObject.get("locationId") == locationId) {
+        // Info-Fenster anzeigen
+        markerObject.trigger(plugin.google.maps.event.MARKER_CLICK);
+        
+        // Kamera zum Marker bewegen
+        var location = null;
+        
+         // Container
+        if (locationType == LOCATION_TYPE_CONTAINER) {
+         location = containerLocationById(locationId);
+        }
+        
+        vars.map.animateCamera({
+           duration: 500,
+           target: {lat: location.lat, lng: location.lng}
+        });
+        
+        return;
+      }
+    }
+  }
+  
+  function locationData(location) {
+    // Container
+    if (locationType == LOCATION_TYPE_CONTAINER) {
+      return location.location;
+    }
+    
+  }
+</script>
+
+<div id="locations-map" style="width: 100%; height: 100%;">
+  <div id="maps-route-container"
+       style="
+         position: absolute; padding: 5px; margin: 10px; background-color: white; display: none;
+         font-size: larger;
+       ">
+    <a id="maps-route-link">Route anzeigen</a>
+  </div>
+</div>
+
+<script>
+  function containerImage(container) {
+    return containerTypes[container.container_type].imageName;
+  }
+
+  function containerName(container) {
+    return containerTypes[container.container_type].name;
+  }
+  
+  function containerLocationById(id) {
+    for (var index = 0; index < containerLocations.length; index++) {
+      var containerLocation = containerLocations[index].location;
+
+      if (containerLocation.id == id) {
+        return containerLocation;
+      }
+    }
+
+    return null;
+  }
+  
+  function containerLocationSubText(containerLocation) {
+    return containerLocation.street.name + " " + containerLocation.street_number + ", " + containerLocation.distance + "m";
+  }
+</script>
