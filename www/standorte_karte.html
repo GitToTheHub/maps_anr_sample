@@ -1,25 +1,10 @@
 <script>
-  const LOCATION_TYPE_CONTAINER = 1;
-  const CONTAINER_TYPE_GLAS = 2;
-  const CONTAINER_TYPE_KLEIDER = 3;
-  var containerTypes = {};
-  
-  containerTypes[CONTAINER_TYPE_GLAS] = {
-    imageName: "flaschen.png",
-    name: "Glascontainer"
-  };
-
-  containerTypes[CONTAINER_TYPE_KLEIDER] = {
-    imageName: "altkleider.png",
-    name: "Altkleider"
-  };
-  
   var vars = currentPage.variables;
   vars.map = null;
   vars.markerObjects = [];
   vars.locations = [];
   
-  var containerLocations = setupContainers();
+
   var locationType = LOCATION_TYPE_CONTAINER;
   
   if (locationType == LOCATION_TYPE_CONTAINER) {
@@ -250,29 +235,3 @@
     <a id="maps-route-link">Route anzeigen</a>
   </div>
 </div>
-
-<script>
-  function containerImage(container) {
-    return containerTypes[container.container_type].imageName;
-  }
-
-  function containerName(container) {
-    return containerTypes[container.container_type].name;
-  }
-  
-  function containerLocationById(id) {
-    for (var index = 0; index < containerLocations.length; index++) {
-      var containerLocation = containerLocations[index].location;
-
-      if (containerLocation.id == id) {
-        return containerLocation;
-      }
-    }
-
-    return null;
-  }
-  
-  function containerLocationSubText(containerLocation) {
-    return containerLocation.street.name + " " + containerLocation.street_number + ", " + containerLocation.distance + "m";
-  }
-</script>

@@ -1,0 +1,90 @@
+<script>
+  var vars = currentPage.variables;
+  vars.locations = [];
+  
+  var locationType = LOCATION_TYPE_CONTAINER;
+  
+  if (locationType == LOCATION_TYPE_CONTAINER) {
+    setPageTitle("Container");
+    vars.locations = containerLocations;
+  }
+  
+  vars.navigationBarButton = addNavigationBarButton("karte_weiss.png", function() {
+    loadLocationMapPage(locationType);
+  });
+  
+  initLocationsList();
+  
+  function initLocationsList() {
+    var setRowGrayColor = true;
+    
+    for(var index = 0; index < vars.locations.length; index++) {
+      var location = locationData(vars.locations[index]);
+      var imageTags = "";
+      var subText = "";
+      
+      // Container
+      if (locationType == LOCATION_TYPE_CONTAINER) {
+        imageTags = containerLocationImageTags(location);
+        subText = containerLocationSubText(location)
+       
+      // Sackausgabestelle
+      } else if (locationType == LOCATION_TYPE_TRASHBAG) {
+        imageTags = trashBagLocationImageTags(location);
+        subText = trashBagLocationSubText(location);
+      }
+      
+      var listHTML =
+        '<tr data-location-id="[location_id]" style="[tr_style]" class="containerRow">' + 
+          '<td class="typeCol">[location_images]</td>' + 
+          '<td>[text]<div class="sub-text">[sub_text]</div></td>' +
+        '</tr>';
+      
+      var trStyle = "";
+      
+      if (setRowGrayColor) {
+        trStyle = 'background-color: #d5d5d5;';
+        setRowGrayColor = false;
+      } else {
+        trStyle = 'background-color: #e9e9e9;';
+        setRowGrayColor = true;
+      }
+      
+      listHTML = listHTML.replace("[location_id]", location.id);
+      listHTML = listHTML.replace("[tr_style]", trStyle);
+      listHTML = listHTML.replace("[location_images]", imageTags);
+      listHTML = listHTML.replace("[text]", location.name);
+      listHTML = listHTML.replace("[sub_text]", subText);
+      
+      var tr = $(listHTML);
+      
+      // Standort soll auf Karte angezeigt werden
+      tr.click(function(event){
+        loadLocationMapPage(locationType, $(this).data("location-id"));
+      });
+      
+      $("#locations-list").append(tr);
+    }
+  }
+  
+  function locationData(location) {
+    // Container
+    if (locationType == LOCATION_TYPE_CONTAINER) {
+      return location.location;
+     
+    // Sackausgabestelle
+    } else if (locationType == LOCATION_TYPE_TRASHBAG) {
+      return location.trashbag;
+    }      
+  }
+</script>
+
+<!-- Hinweistext für Müllbeutel -->
+<div id="trashbag-hint"
+     style="padding: 5px; text-align: center; font-size: 14px; display: none;">
+  A Hint Text for this list
+</div>
+
+<table id="locations-list" style="width: 100%; border-spacing: 0px;">
+  
+</table>

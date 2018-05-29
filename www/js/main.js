@@ -1,5 +1,5 @@
 var appInitialized = false;
-var startpageFilename = "standorte_karte.html";
+var startpageFilename = "standorte_liste.html";
 
 var app = {
   // ACHTUNG: initialize darf erst nach 'deviceready' aufgerufen werden!
