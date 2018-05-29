@@ -100,7 +100,7 @@
     <!-- <plugin name="cordova-plugin-local-notification" spec="0.9.0-beta.3" /> -->
     <plugin name="cordova-plugin-local-notification" spec="https://github.com/GitToTheHub/cordova-plugin-local-notifications.git#Android_8_Fix_Device_Reboot" />
     
-    <plugin name="cordova-plugin-googlemaps" spec="2.2.8">
+    <plugin name="cordova-plugin-googlemaps" spec="2.3.4">
       <variable name="API_KEY_FOR_ANDROID" value="AIzaSyABhCtQrQL1ADq8_x8FBW_fRC6aEaEwyA0" />
       <variable name="API_KEY_FOR_IOS" value="AIzaSyABhCtQrQL1ADq8_x8FBW_fRC6aEaEwyA0" />
     </plugin>
