@@ -161,10 +161,12 @@ function getDistanceAwayText(distance) {
 }
 
 function showPleaseWaitContainer() {
+  return;
   $("#please-wait-container").show();
 }
 
 function hidePleaseWaitContainer() {
+  return;
   $("#please-wait-container").hide();
 }
 
