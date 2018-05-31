@@ -9,7 +9,7 @@
   xmlns:gap="http://phonegap.com/ns/1.0">
   
     <!-- Das short-Attribut legt den App-Display-Namen auf dem Home-Screen fest -->
-    <name short="Maps ANR Sample">Maps ANR Sample</name>
+    <name short="Maps ANR Sample">Maps ANR Sample v2.3.5</name>
     
     <description>
       Sample Project for debugging an ANR in Android 7, which caused by the cordova maps plugin.
